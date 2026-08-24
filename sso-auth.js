@@ -2,7 +2,7 @@ function testZohoLogin() {
   const clientId = "762554.RJXHFUZYYX8TZTXUJ95H7Y1E5JQZIJ"; 
   
   // Notice the slash at the end! This MUST match Zoho exactly.
-  const redirectUri = "https://iamahsan.org/"; 
+  const redirectUri = "https://iamahsan.org"; 
   
   // REPLACE THIS WITH YOUR REAL URL AGAIN
   const authEndpoint = "https://directory.zoho.eu/p/20118762554/app/277463000000002049/sso/authorize"; 
