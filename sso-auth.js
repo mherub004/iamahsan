@@ -6,7 +6,7 @@ function testZohoLogin() {
   const redirectUri = "https://iamahsan.org"; 
   
   // 3. Paste your FULL Authorization Endpoint from Zoho here
-  const authEndpoint = "PASTE_YOUR_FULL_AUTHORIZATION_ENDPOINT_HERE"; 
+  const authEndpoint = "https://directory.zoho.eu/p/20118762554/app/277463000000002049/sso/authorize"; 
   
   // Build the login URL
   const loginUrl = `${authEndpoint}?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=openid profile email`;
