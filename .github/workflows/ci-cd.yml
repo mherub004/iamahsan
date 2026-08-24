@@ -27,5 +27,5 @@ jobs:
         continue-on-error: true
 
       - name: Validate JavaScript Syntax
-        run: jshint sso-auth.js
+        run: jshint --esversion=11 sso-auth.js
         continue-on-error: true
