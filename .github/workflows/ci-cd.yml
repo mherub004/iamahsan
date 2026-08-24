@@ -1,0 +1,29 @@
+name: Website CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  code-quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Testing Tools
+        run: npm install -g htmlhint jshint
+
+      - name: Validate HTML Code
+        run: htmlhint "**/*.html"
+
+      - name: Validate JavaScript Syntax
+        run: jshint sso-auth.js
