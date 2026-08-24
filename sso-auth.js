@@ -1,16 +1,19 @@
 function testZohoLogin() {
-  // 1. Your Client ID from the Zoho screenshot
   const clientId = "762554.RJXHFUZYYX8TZTXUJ95H7Y1E5JQZIJ"; 
   
-  // 2. Where Zoho should send you back 
-  const redirectUri = "https://iamahsan.org"; 
+  // Notice the slash at the end! This MUST match Zoho exactly.
+  const redirectUri = "https://iamahsan.org/"; 
   
-  // 3. Paste your FULL Authorization Endpoint from Zoho here
+  // REPLACE THIS WITH YOUR REAL URL AGAIN
   const authEndpoint = "https://directory.zoho.eu/p/20118762554/app/277463000000002049/sso/authorize"; 
   
-  // Build the login URL
-  const loginUrl = `${authEndpoint}?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=openid profile email`;
+  // This safely builds the URL so we don't get formatting errors
+  const url = new URL(authEndpoint);
+  url.searchParams.append("response_type", "code");
+  url.searchParams.append("client_id", clientId);
+  url.searchParams.append("redirect_uri", redirectUri);
+  url.searchParams.append("scope", "openid"); // simplified scope
   
   // Send the user to Zoho!
-  window.location.href = loginUrl;
+  window.location.href = url.toString();
 }
