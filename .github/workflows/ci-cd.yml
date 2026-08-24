@@ -19,13 +19,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Testing Tools
-        run: npm install -g htmlhint jshint
+      - name: Install HTML Testing Tool
+        run: npm install -g htmlhint
 
       - name: Validate HTML Code
         run: htmlhint "**/*.html"
         continue-on-error: true
 
       - name: Validate JavaScript Syntax
-        run: jshint --esversion=11 sso-auth.js
-        continue-on-error: true
+        run: node --check sso-auth.js
