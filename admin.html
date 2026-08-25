@@ -40,32 +40,28 @@
   </div>
 
   <script>
-    const PUBLISHABLE_KEY = "pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA";
+    // Paste your NEW key copied from Developers -> API keys here
+    const PUBLISHABLE_KEY = "pk_live_Y2xlcmsuaWFtYWhzYW4ub3JnJA";
 
     async function initAuth() {
       const statusEl = document.getElementById('status');
       const container = document.getElementById('auth-container');
 
       try {
-        // 1. Load Clerk JS directly from Clerk's official web bundle
+        // Load Clerk script from verified custom domain endpoint
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
+          script.src = "https://clerk.iamahsan.org/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
+          script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
           script.crossOrigin = 'anonymous';
           script.onload = resolve;
           script.onerror = reject;
           document.head.appendChild(script);
         });
 
-        // 2. Initialize Clerk using constructor parameter
-        const clerk = new window.Clerk(PUBLISHABLE_KEY);
-        
-        // Load with explicitly defined publishable key
-        await clerk.load({
-          publishableKey: PUBLISHABLE_KEY
-        });
+        const clerk = window.Clerk;
+        await clerk.load();
 
-        // 3. Mount appropriate UI
         if (clerk.user) {
           statusEl.style.color = "#22c55e";
           statusEl.innerText = `Authenticated: ${clerk.user.primaryEmailAddress?.emailAddress}`;
