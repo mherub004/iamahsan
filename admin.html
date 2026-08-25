@@ -9,41 +9,42 @@
 
   <div id="app" style="text-align: center; background: #18181b; padding: 2.5rem; border-radius: 12px; border: 1px solid #27272a; max-width: 400px; width: 90%;">
     <h2 style="margin-top: 0;">🔒 Admin Portal</h2>
-    <p id="status-text" style="color: #a1a1aa; margin-bottom: 1.5rem;">Initializing security check...</p>
+    <p id="status-text" style="color: #a1a1aa; margin-bottom: 1.5rem;">Connecting to authentication system...</p>
     <div id="auth-container"></div>
   </div>
 
-  <!-- Load Clerk directly from official CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+  <!-- Load Clerk JS with script initialization -->
+  <script 
+    async 
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA" 
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    onload="initClerk()">
+  </script>
 
   <script>
-    const PUBLISHABLE_KEY = "pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA";
-
-    window.addEventListener('load', async function () {
+    async function initClerk() {
       const statusText = document.getElementById('status-text');
       const authContainer = document.getElementById('auth-container');
 
       try {
-        // Initialize Clerk SDK
-        const clerk = new Clerk(PUBLISHABLE_KEY);
-        await clerk.load();
+        // Mount from window object
+        await window.Clerk.load();
 
-        if (clerk.user) {
-          // Logged In State
+        if (window.Clerk.user) {
           statusText.style.color = "#22c55e";
-          statusText.innerText = `Authenticated as ${clerk.user.primaryEmailAddress?.emailAddress || 'Admin'}`;
-          clerk.mountUserButton(authContainer);
+          statusText.innerText = `Authenticated as ${window.Clerk.user.primaryEmailAddress?.emailAddress || 'Admin'}`;
+          window.Clerk.mountUserButton(authContainer);
         } else {
-          // Logged Out State
           statusText.innerText = "Please sign in to access admin rights.";
-          clerk.mountSignIn(authContainer);
+          window.Clerk.mountSignIn(authContainer);
         }
       } catch (err) {
-        console.error("Clerk Init Error:", err);
+        console.error("Clerk Error:", err);
         statusText.style.color = "#ef4444";
-        statusText.innerText = "Failed to connect to Auth server. Please refresh.";
+        statusText.innerText = "Connection paused by browser or SSL verification. Please refresh.";
       }
-    });
+    }
   </script>
 </body>
 </html>
