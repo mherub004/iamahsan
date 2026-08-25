@@ -47,22 +47,25 @@
       const container = document.getElementById('auth-container');
 
       try {
-        // 1. Load Clerk JS directly from official CDN
+        // 1. Load Clerk JS directly from Clerk's official web bundle
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
           script.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
-          script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
           script.crossOrigin = 'anonymous';
           script.onload = resolve;
           script.onerror = reject;
           document.head.appendChild(script);
         });
 
-        // 2. Instantiate Clerk using your key directly
+        // 2. Initialize Clerk using constructor parameter
         const clerk = new window.Clerk(PUBLISHABLE_KEY);
-        await clerk.load();
+        
+        // Load with explicitly defined publishable key
+        await clerk.load({
+          publishableKey: PUBLISHABLE_KEY
+        });
 
-        // 3. Mount UI components
+        // 3. Mount appropriate UI
         if (clerk.user) {
           statusEl.style.color = "#22c55e";
           statusEl.innerText = `Authenticated: ${clerk.user.primaryEmailAddress?.emailAddress}`;
