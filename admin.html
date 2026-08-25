@@ -4,55 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Ahsan</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #09090b;
+      color: #f4f4f5;
+      margin: 0;
+    }
+    .card {
+      text-align: center;
+      background: #18181b;
+      padding: 2.5rem;
+      border-radius: 12px;
+      border: 1px solid #27272a;
+      max-width: 400px;
+      width: 90%;
+    }
+    #status {
+      color: #a1a1aa;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
-<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #09090b; color: #f4f4f5; margin: 0;">
+<body>
 
-  <div id="app" style="text-align: center; background: #18181b; padding: 2.5rem; border-radius: 12px; border: 1px solid #27272a; max-width: 400px; width: 90%;">
+  <div class="card">
     <h2 style="margin-top: 0;">🔒 Admin Portal</h2>
-    <p id="status-text" style="color: #a1a1aa; margin-bottom: 1.5rem;">Connecting to authentication system...</p>
+    <div id="status">Connecting to authentication server...</div>
     <div id="auth-container"></div>
   </div>
 
   <script>
     const PUBLISHABLE_KEY = "pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA";
 
-    // 1. Decode FAPI Domain directly from your Live Publishable Key
-    const fapiDomain = atob(PUBLISHABLE_KEY.replace('pk_live_', '')).replace('$', '');
-
-    // 2. Load script directly from YOUR custom domain endpoint
-    const script = document.createElement('script');
-    script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
-    script.src = `https://${fapiDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
-    script.async = true;
-    script.crossOrigin = "anonymous";
-
-    script.onload = async () => {
-      const statusText = document.getElementById('status-text');
-      const authContainer = document.getElementById('auth-container');
+    async function initAuth() {
+      const statusEl = document.getElementById('status');
+      const container = document.getElementById('auth-container');
 
       try {
-        await window.Clerk.load();
+        // 1. Extract domain from key
+        const clerkDomain = atob(PUBLISHABLE_KEY.split('_')[2]).slice(0, -1);
 
-        if (window.Clerk.user) {
-          statusText.style.color = "#22c55e";
-          statusText.innerText = `Authenticated as ${window.Clerk.user.primaryEmailAddress?.emailAddress || 'Admin'}`;
-          window.Clerk.mountUserButton(authContainer);
+        // 2. Dynamically load Clerk JS & UI components
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = `https://${clerkDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
+          script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
+          script.crossOrigin = 'anonymous';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+
+        // 3. Initialize Clerk instance
+        const clerk = window.Clerk;
+        await clerk.load({
+          ui: { ClerkUI: window.__internal_ClerkUICtor }
+        });
+
+        // 4. Render UI
+        if (clerk.user) {
+          statusEl.style.color = "#22c55e";
+          statusEl.innerText = `Authenticated: ${clerk.user.primaryEmailAddress?.emailAddress}`;
+          clerk.mountUserButton(container);
         } else {
-          statusText.innerText = "Please sign in to access admin rights.";
-          window.Clerk.mountSignIn(authContainer);
+          statusEl.innerText = "Please sign in with your admin credentials.";
+          clerk.mountSignIn(container);
         }
-      } catch (err) {
-        console.error("Clerk Init Error:", err);
-        statusText.style.color = "#ef4444";
-        statusText.innerText = "Failed to load authentication UI. Please try again.";
+
+      } catch (error) {
+        console.error("Clerk Initialization Error:", error);
+        statusEl.style.color = "#ef4444";
+        statusEl.innerText = "Error loading security component. Check browser console (F12).";
       }
-    };
+    }
 
-    script.onerror = () => {
-      document.getElementById('status-text').innerText = "DNS SSL still propagating. Please wait 2 minutes and refresh.";
-    };
-
-    document.head.appendChild(script);
+    window.addEventListener('load', initAuth);
   </script>
 </body>
 </html>
