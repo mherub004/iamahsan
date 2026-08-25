@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard | Ahsan</title>
-  <!-- Load Clerk JS via your custom domain -->
+  <!-- Load Clerk JS via official CDN -->
   <script 
     async 
     data-clerk-publishable-key="pk_live_Y2xlcmsuaWFtYWhzYW4ub3JnJA" 
-    src="https://clerk.iamahsan.org/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+    src="https://cdn.clerk.io/clerk.js">
   </script>
 </head>
 <body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
@@ -20,9 +20,11 @@
 
   <script>
     window.addEventListener('load', async function () {
+      // Wait for Clerk object to load
       await Clerk.load();
 
       if (Clerk.user) {
+        // Render authenticated state
         document.getElementById('app').innerHTML = `
           <h1>Welcome, ${Clerk.user.firstName}! 👋</h1>
           <p>System Status: <b>All Systems Operational</b></p>
@@ -30,6 +32,7 @@
         `;
         Clerk.mountUserButton(document.getElementById('user-button'));
       } else {
+        // Render sign-in widget
         Clerk.mountSignIn(document.getElementById('sign-in-button'));
       }
     });
