@@ -2,38 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Ahsan</title>
-  <!-- Load Clerk JS via official CDN -->
-  <script 
-    async 
-    data-clerk-publishable-key="pk_live_Y2xlcmsuaWFtYWhzYW4ub3JnJA" 
-    src="https://cdn.clerk.io/clerk.js">
-  </script>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #09090b; color: #f4f4f5; margin: 0;">
 
-  <div id="app">
-    <h2>🔒 Admin Portal</h2>
-    <p>Please sign in to access confidential developer notes.</p>
-    <div id="sign-in-button"></div>
+  <div id="app" style="text-align: center; background: #18181b; padding: 2.5rem; border-radius: 12px; border: 1px solid #27272a; max-width: 400px; width: 90%;">
+    <h2 style="margin-top: 0;">🔒 Admin Portal</h2>
+    <p id="status-text" style="color: #a1a1aa; margin-bottom: 1.5rem;">Initializing security check...</p>
+    <div id="auth-container"></div>
   </div>
 
-  <script>
-    window.addEventListener('load', async function () {
-      // Wait for Clerk object to load
-      await Clerk.load();
+  <!-- Load Clerk directly from official CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 
-      if (Clerk.user) {
-        // Render authenticated state
-        document.getElementById('app').innerHTML = `
-          <h1>Welcome, ${Clerk.user.firstName}! 👋</h1>
-          <p>System Status: <b>All Systems Operational</b></p>
-          <div id="user-button"></div>
-        `;
-        Clerk.mountUserButton(document.getElementById('user-button'));
-      } else {
-        // Render sign-in widget
-        Clerk.mountSignIn(document.getElementById('sign-in-button'));
+  <script>
+    const PUBLISHABLE_KEY = "pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA";
+
+    window.addEventListener('load', async function () {
+      const statusText = document.getElementById('status-text');
+      const authContainer = document.getElementById('auth-container');
+
+      try {
+        // Initialize Clerk SDK
+        const clerk = new Clerk(PUBLISHABLE_KEY);
+        await clerk.load();
+
+        if (clerk.user) {
+          // Logged In State
+          statusText.style.color = "#22c55e";
+          statusText.innerText = `Authenticated as ${clerk.user.primaryEmailAddress?.emailAddress || 'Admin'}`;
+          clerk.mountUserButton(authContainer);
+        } else {
+          // Logged Out State
+          statusText.innerText = "Please sign in to access admin rights.";
+          clerk.mountSignIn(authContainer);
+        }
+      } catch (err) {
+        console.error("Clerk Init Error:", err);
+        statusText.style.color = "#ef4444";
+        statusText.innerText = "Failed to connect to Auth server. Please refresh.";
       }
     });
   </script>
