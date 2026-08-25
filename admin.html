@@ -13,22 +13,24 @@
     <div id="auth-container"></div>
   </div>
 
-  <!-- Load Clerk JS with script initialization -->
-  <script 
-    async 
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA" 
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-    onload="initClerk()">
-  </script>
-
   <script>
-    async function initClerk() {
+    const PUBLISHABLE_KEY = "pk_live_Y2x1cmsuaWFTYWhzYW4ub3JnJA";
+
+    // 1. Decode FAPI Domain directly from your Live Publishable Key
+    const fapiDomain = atob(PUBLISHABLE_KEY.replace('pk_live_', '')).replace('$', '');
+
+    // 2. Load script directly from YOUR custom domain endpoint
+    const script = document.createElement('script');
+    script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
+    script.src = `https://${fapiDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
+    script.async = true;
+    script.crossOrigin = "anonymous";
+
+    script.onload = async () => {
       const statusText = document.getElementById('status-text');
       const authContainer = document.getElementById('auth-container');
 
       try {
-        // Mount from window object
         await window.Clerk.load();
 
         if (window.Clerk.user) {
@@ -40,11 +42,17 @@
           window.Clerk.mountSignIn(authContainer);
         }
       } catch (err) {
-        console.error("Clerk Error:", err);
+        console.error("Clerk Init Error:", err);
         statusText.style.color = "#ef4444";
-        statusText.innerText = "Connection paused by browser or SSL verification. Please refresh.";
+        statusText.innerText = "Failed to load authentication UI. Please try again.";
       }
-    }
+    };
+
+    script.onerror = () => {
+      document.getElementById('status-text').innerText = "DNS SSL still propagating. Please wait 2 minutes and refresh.";
+    };
+
+    document.head.appendChild(script);
   </script>
 </body>
 </html>
