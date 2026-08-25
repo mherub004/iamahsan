@@ -47,13 +47,10 @@
       const container = document.getElementById('auth-container');
 
       try {
-        // 1. Extract domain from key
-        const clerkDomain = atob(PUBLISHABLE_KEY.split('_')[2]).slice(0, -1);
-
-        // 2. Dynamically load Clerk JS & UI components
+        // 1. Load Clerk JS directly from your verified Clerk CNAME endpoint
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = `https://${clerkDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
+          script.src = "https://clerk.iamahsan.org/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
           script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
           script.crossOrigin = 'anonymous';
           script.onload = resolve;
@@ -61,13 +58,11 @@
           document.head.appendChild(script);
         });
 
-        // 3. Initialize Clerk instance
+        // 2. Initialize Clerk instance
         const clerk = window.Clerk;
-        await clerk.load({
-          ui: { ClerkUI: window.__internal_ClerkUICtor }
-        });
+        await clerk.load();
 
-        // 4. Render UI
+        // 3. Mount UI
         if (clerk.user) {
           statusEl.style.color = "#22c55e";
           statusEl.innerText = `Authenticated: ${clerk.user.primaryEmailAddress?.emailAddress}`;
@@ -80,7 +75,7 @@
       } catch (error) {
         console.error("Clerk Initialization Error:", error);
         statusEl.style.color = "#ef4444";
-        statusEl.innerText = "Error loading security component. Check browser console (F12).";
+        statusEl.innerText = "Error loading security component.";
       }
     }
 
