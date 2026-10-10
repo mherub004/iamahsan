@@ -10,27 +10,29 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0e1a;
-    --bg2: #0f1525;
-    --bg3: #151c30;
-    --bg4: #1a2240;
-    --border: #1e2d50;
-    --border2: #243560;
-    --accent: #4f8ef7;
-    --accent2: #6fa3ff;
-    --accent-dim: rgba(79,142,247,0.12);
-    --accent-dim2: rgba(79,142,247,0.06);
-    --green: #3ecf8e;
-    --green-dim: rgba(62,207,142,0.12);
+    --bg: #0f1720;
+    --bg2: #151f2b;
+    --bg3: #1b2837;
+    --bg4: #223246;
+    --border: #263648;
+    --border2: #35506a;
+    --accent: #4fd1c5;
+    --accent2: #99e6dc;
+    --pink: #f6a97a;
+    --grad: linear-gradient(135deg, #4fd1c5 0%, #63b3ed 100%);
+    --accent-dim: rgba(79,209,197,0.13);
+    --accent-dim2: rgba(79,209,197,0.06);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.12);
     --amber: #f59e0b;
     --amber-dim: rgba(245,158,11,0.1);
-    --text: #e2e8f0;
-    --text2: #94a3b8;
-    --text3: #64748b;
+    --text: #e6edf3;
+    --text2: #9fb0c0;
+    --text3: #6b7f92;
     --mono: 'JetBrains Mono', monospace;
     --sans: 'Inter', sans-serif;
-    --radius: 8px;
-    --radius-lg: 14px;
+    --radius: 10px;
+    --radius-lg: 18px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,7 +72,7 @@
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 100;
-    background: rgba(10,14,26,0.85);
+    background: rgba(15,23,32,0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     padding: 0 2rem;
@@ -168,8 +170,8 @@
   }
 
   @keyframes pulse {
-    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(62,207,142,0.4); }
-    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(62,207,142,0); }
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(52,211,153,0); }
   }
 
   h1 {
@@ -210,7 +212,7 @@
     font-size: 13px;
     padding: 11px 22px;
     background: var(--accent);
-    color: #0a0e1a;
+    color: #0f1720;
     border: none;
     border-radius: var(--radius);
     text-decoration: none;
@@ -432,7 +434,7 @@
 
   .skill-tag:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 
-  .skill-tag.hot { border-color: rgba(62,207,142,0.3); color: var(--green); background: var(--green-dim); }
+  .skill-tag.hot { border-color: rgba(52,211,153,0.3); color: var(--green); background: var(--green-dim); }
 
   /* Experience */
   #experience { padding: 100px 0; }
@@ -557,7 +559,7 @@
   .project-card:hover {
     border-color: var(--accent);
     transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(79,142,247,0.1);
+    box-shadow: 0 8px 30px rgba(79,209,197,0.1);
   }
 
   .project-top { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -566,7 +568,7 @@
     width: 40px; height: 40px;
     border-radius: 10px;
     background: var(--accent-dim);
-    border: 1px solid rgba(79,142,247,0.2);
+    border: 1px solid rgba(79,209,197,0.2);
     display: flex; align-items: center; justify-content: center;
     font-size: 18px;
   }
@@ -745,9 +747,9 @@
     border-radius: 20px;
   }
 
-  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.25); }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.25); }
   .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
-  .badge-blue { background: var(--accent-dim); color: var(--accent2); border: 1px solid rgba(79,142,247,0.25); }
+  .badge-blue { background: var(--accent-dim); color: var(--accent2); border: 1px solid rgba(79,209,197,0.25); }
 
   /* Footer */
   footer {
@@ -778,6 +780,126 @@
     transform: translateY(0);
   }
 
+
+  /* ===== Theme refinements ===== */
+  [hidden] { display: none !important; }
+
+  body::before {
+    -webkit-mask-image: radial-gradient(ellipse at 50% 15%, #000 15%, transparent 78%);
+            mask-image: radial-gradient(ellipse at 50% 15%, #000 15%, transparent 78%);
+  }
+
+  #hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(620px 360px at 80% 28%, rgba(79,209,197,0.17), transparent 70%),
+      radial-gradient(520px 320px at 8% 85%, rgba(246,169,122,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  h1 .accent {
+    background: var(--grad);
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .btn-primary { background: var(--grad); }
+  .btn-primary:hover { background: var(--grad); filter: brightness(1.12); }
+
+  .btn-cv {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 11px 20px;
+    background: var(--accent-dim);
+    color: var(--accent2);
+    border: 1px solid rgba(79,209,197,0.45);
+    border-radius: var(--radius);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-cv:hover { background: rgba(79,209,197,0.22); color: #fff; transform: translateY(-1px); }
+  .btn-cv svg { width: 15px; height: 15px; }
+
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+
+  .nav-cv, .nav-admin {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .nav-cv { color: var(--green); border: 1px solid rgba(52,211,153,0.35); }
+  .nav-cv:hover { background: var(--green-dim); }
+  .nav-admin { color: var(--text3); border: 1px dashed var(--border2); }
+  .nav-admin:hover { color: var(--accent2); border-color: var(--accent); }
+
+  .terminal {
+    position: relative;
+    box-shadow: 0 0 0 1px rgba(79,209,197,0.08), 0 24px 60px -24px rgba(79,209,197,0.4);
+  }
+  .terminal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad);
+    opacity: .85;
+  }
+
+  .stat { border-left: 2px solid var(--accent); }
+  .section-line { background: linear-gradient(90deg, var(--border2), transparent); }
+  .section-num { color: var(--pink); }
+
+  .exp-content::before { box-shadow: 0 0 0 4px var(--accent-dim); }
+
+  .project-card { position: relative; overflow: hidden; }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .35s ease;
+  }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  .skill-group, .edu-card, .exp-content { transition: border-color .2s, box-shadow .2s; }
+  .skill-group:hover, .exp-content:hover { border-color: var(--border2); box-shadow: 0 10px 30px -18px rgba(79,209,197,0.35); }
+
+  footer a { color: var(--text3); text-decoration: none; border-bottom: 1px dashed var(--border2); }
+  footer a:hover { color: var(--accent2); }
+
+
+  /* ===== Violet theme decorations ===== */
+  body::before {
+    background-image: radial-gradient(circle, var(--border2) 1px, transparent 1.5px);
+    background-size: 28px 28px;
+    opacity: .4;
+  }
+  nav::after {
+    content: '';
+    position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--pink), transparent);
+    opacity: .6;
+  }
+  .hero-eyebrow { padding: 4px 12px; border: 1px solid rgba(52,211,153,0.3); border-radius: 20px; background: var(--green-dim); width: fit-content; }
+  .skill-group-title { color: var(--pink); }
+  .exp-company, .edu-degree { color: var(--accent2); }
+  ::selection { background: rgba(79,209,197,0.35); color: #fff; }
+
   /* Responsive */
   @media (max-width: 900px) {
     .hero-inner { grid-template-columns: 1fr; }
@@ -792,6 +914,7 @@
     .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 1rem 2rem; gap: 1rem; }
     .nav-mobile-toggle { display: block; }
     .nav-cta { display: none; }
+    .nav-cv { display: none; }
   }
 
   @media (max-width: 600px) {
@@ -817,7 +940,11 @@
     <li><a href="#education">Education</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
-  <a href="mailto:mherub.diu.cse@gmail.com" class="nav-cta">hire_me()</a>
+  <div class="nav-right">
+    <a href="cv/Mherub_Ahsan_CV.pdf" download="Mherub_Ahsan_CV.pdf" class="nav-cv" data-cv>↓ cv</a>
+    <a href="mailto:mherub.diu.cse@gmail.com" class="nav-cta">hire_me()</a>
+    <a href="admin.html" class="nav-admin" title="Admin login">🔒 admin</a>
+  </div>
   <button class="nav-mobile-toggle" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
 </nav>
 
@@ -825,10 +952,10 @@
 <section id="hero">
   <div class="hero-inner">
     <div class="hero-left">
-      <div class="hero-eyebrow">Available for full-time roles worldwide</div>
+      <div class="hero-eyebrow" data-content="hero.eyebrow">Available for full-time roles worldwide</div>
       <h1>Mherub<br><span class="accent">Ahsan</span></h1>
-      <div class="hero-title-sub">IT Engineer / Cloud & DevOps</div>
-      <p class="hero-desc">
+      <div class="hero-title-sub" data-content="hero.subtitle">IT Engineer / Cloud & DevOps</div>
+      <p class="hero-desc" data-content="hero.desc">
         IT System Administrator with 2+ years managing enterprise infrastructure for 150–500 users.
         M.Sc. Data Science student at FAU Erlangen. Building toward Cloud/DevOps engineering.
         Open to relocation worldwide.
@@ -836,9 +963,10 @@
       <div class="hero-btns">
         <a href="#contact" class="btn-primary">Get in touch</a>
         <a href="#experience" class="btn-secondary">View experience</a>
-        <button onclick="testZohoLogin()" class="btn-primary" style="background: #3ecf8e; color: #0a0e1a; border: none; cursor: pointer;">
-          Test Zoho SSO
-        </button>
+        <a href="cv/Mherub_Ahsan_CV.pdf" download="Mherub_Ahsan_CV.pdf" class="btn-cv" data-cv>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Download CV
+        </a>
       </div>
       <div class="stats-row">
         <div class="stat">
@@ -899,19 +1027,19 @@
     </div>
     <div class="about-grid fade-in">
       <div class="about-text">
-        <p>
+        <p data-content="about.p1">
           I'm an IT System Administrator currently working at <strong>ABL GmbH</strong> in Lauf, Germany,
           where I independently manage the full IT environment for 150–500 users — from Microsoft 365
           and Active Directory administration to endpoint deployment, network infrastructure, and hardware
           asset management.
         </p>
-        <p>
+        <p data-content="about.p2">
           Alongside my professional work, I'm pursuing a <strong>Master's in Data Science</strong> at
           Friedrich-Alexander-Universität (FAU) Erlangen-Nürnberg, where I work on machine learning,
           AI systems, and data engineering — most recently presenting research on self-supervised learning
           for dysarthric speech recognition at the Pattern Recognition Lab.
         </p>
-        <p>
+        <p data-content="about.p3">
           I'm actively building Cloud and DevOps skills — learning <strong>Azure, Docker, Terraform,
           and Kubernetes</strong> — targeting roles that bridge IT infrastructure with modern cloud
           engineering. I'm fully open to relocation worldwide for the right opportunity.
@@ -1221,8 +1349,8 @@
     </div>
     <div class="contact-inner fade-in">
       <div class="contact-text">
-        <h3>Let's work together</h3>
-        <p>
+        <h3 data-content="contact.heading">Let's work together</h3>
+        <p data-content="contact.text">
           I'm actively looking for full-time IT, Cloud/DevOps, or Data Engineering roles worldwide.
           I'm open to relocation and excited to join an international team. Drop me an email or
           connect on LinkedIn — I respond within 24 hours.
@@ -1247,6 +1375,13 @@
             <div class="contact-link-text">
               <div class="contact-link-label">github</div>
               <div class="contact-link-val">mherub004</div>
+            </div>
+          </a>
+          <a href="cv/Mherub_Ahsan_CV.pdf" download="Mherub_Ahsan_CV.pdf" class="contact-link" data-cv>
+            <div class="contact-link-icon">📄</div>
+            <div class="contact-link-text">
+              <div class="contact-link-label">resume</div>
+              <div class="contact-link-val">Download CV (PDF)</div>
             </div>
           </a>
           <a href="tel:+4915566041586" class="contact-link">
@@ -1295,7 +1430,7 @@
 </section>
 
 <footer>
-  built by <span>Mherub Ahsan</span> · Erlangen, Germany · 2025
+  built by <span>Mherub Ahsan</span> · Erlangen, Germany · 2025 · <a href="admin.html">admin</a>
 </footer>
 
 <script>
@@ -1305,12 +1440,50 @@
 
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
+
+  // ---- Editable content (content.json, managed from admin.html) ----
+  function setRich(el, text) {
+    // supports **bold** only; everything else is plain text (no innerHTML => no injection)
+    el.textContent = '';
+    text.split(/(\*\*[^*]+\*\*)/).forEach(part => {
+      if (!part) return;
+      if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+        const b = document.createElement('strong');
+        b.textContent = part.slice(2, -2);
+        el.appendChild(b);
+      } else {
+        el.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  fetch('content.json', { cache: 'no-cache' })
+    .then(r => (r.ok ? r.json() : null))
+    .then(c => {
+      if (!c) return;
+      document.querySelectorAll('[data-content]').forEach(el => {
+        const v = c[el.dataset.content];
+        if (typeof v === 'string' && v.trim()) setRich(el, v);
+      });
+    })
+    .catch(() => {});
+
+  // ---- CV buttons are always visible; if no CV is uploaded yet, show a short notice instead of a 404 ----
+  let cvMissing = false;
+  fetch('cv/Mherub_Ahsan_CV.pdf', { method: 'HEAD', cache: 'no-cache' })
+    .then(r => { cvMissing = !r.ok; })
+    .catch(() => {});
+  document.querySelectorAll('[data-cv]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (cvMissing) { e.preventDefault(); alert('The CV is not uploaded yet. Please check back soon or email me.'); }
+    });
+  });
+
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       document.getElementById('navlinks').classList.remove('open');
     });
   });
 </script>
-<script src="sso-auth.js"></script>
 </body>
 </html>

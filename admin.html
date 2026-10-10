@@ -3,82 +3,391 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Admin Dashboard | Ahsan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0f1720; --bg2: #151f2b; --bg3: #1b2837; --bg4: #223246;
+      --border: #263648; --border2: #35506a;
+      --accent: #4fd1c5; --accent2: #99e6dc; --pink: #f6a97a;
+      --green: #34d399; --red: #f87171; --amber: #f59e0b;
+      --text: #e6edf3; --text2: #9fb0c0; --text3: #6b7f92;
+      --mono: 'JetBrains Mono', monospace; --sans: 'Inter', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background-color: #09090b;
-      color: #f4f4f5;
-      margin: 0;
+      margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: var(--sans); font-size: 15px; line-height: 1.6;
+      background-image:
+        radial-gradient(600px 340px at 85% 0%, rgba(79,209,197,0.16), transparent 70%),
+        radial-gradient(500px 300px at 0% 100%, rgba(246,169,122,0.07), transparent 70%);
     }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    .gate { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; }
     .card {
-      text-align: center;
-      background: #18181b;
-      padding: 2.5rem;
-      border-radius: 12px;
-      border: 1px solid #27272a;
-      max-width: 400px;
-      width: 90%;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem;
+      margin-bottom: 1.25rem; position: relative; overflow: hidden;
     }
-    #status {
-      color: #a1a1aa;
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(135deg, #4fd1c5, #63b3ed); }
+    .gate .card { text-align: center; max-width: 420px; width: 100%; padding: 2.25rem; }
+    h1, h2 { font-family: var(--mono); margin: 0 0 .5rem; }
+    h1 { font-size: 1.4rem; } h2 { font-size: 1.05rem; color: var(--accent2); }
+    .sub { color: var(--text2); font-size: 13px; margin: 0 0 1.25rem; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .topbar a { color: var(--text2); font-family: var(--mono); font-size: 13px; text-decoration: none; }
+    .topbar a:hover { color: var(--accent2); }
+    label { display: block; font-family: var(--mono); font-size: 12px; color: var(--text3); margin: 1rem 0 .35rem; }
+    input[type=text], input[type=password], textarea {
+      width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 14px;
     }
+    textarea { min-height: 110px; resize: vertical; }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,209,197,.18); }
+    input[type=file] { color: var(--text2); font-size: 13px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+    button {
+      font-family: var(--mono); font-size: 13px; padding: 10px 18px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border2); background: transparent; color: var(--text); transition: all .2s;
+    }
+    button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+    button.primary { background: linear-gradient(135deg, #4fd1c5, #63b3ed); color: #0f1720; border: none; font-weight: 700; }
+    button.primary:hover:not(:disabled) { filter: brightness(1.12); color: #0f1720; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .check { display: flex; align-items: center; gap: 8px; color: var(--text2); font-size: 13px; margin-top: .75rem; }
+    .msg { font-family: var(--mono); font-size: 12.5px; margin-top: .9rem; min-height: 1.2em; color: var(--text2); white-space: pre-wrap; }
+    .msg.ok { color: var(--green); } .msg.err { color: var(--red); }
+    .pill { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text3); }
+    .pill.ok { color: var(--green); border-color: rgba(52,211,153,.35); }
+    .hint { color: var(--text3); font-size: 12.5px; margin-top: .6rem; }
+    code { font-family: var(--mono); background: var(--bg3); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--accent2); }
+    [hidden] { display: none !important; }
+    #status { color: var(--text2); margin-bottom: 1.25rem; font-size: .95rem; }
   </style>
 </head>
 <body>
 
+<!-- Sign-in gate -->
+<div class="gate" id="gate">
   <div class="card">
-    <h2 style="margin-top: 0;">🔒 Admin Portal</h2>
+    <h2 style="font-size:1.25rem;color:var(--text)">🔒 Admin Portal</h2>
     <div id="status">Connecting to authentication server...</div>
     <div id="auth-container"></div>
   </div>
+</div>
 
-  <script>
-    // Paste your NEW key copied from Developers -> API keys here
-    const PUBLISHABLE_KEY = "pk_live_Y2xlcmsuaWFtYWhzYW4ub3JnJA";
+<!-- Dashboard (shown only after sign-in with an allowed account) -->
+<div class="wrap" id="dash" hidden>
+  <div class="topbar">
+    <div>
+      <h1>~/admin</h1>
+      <div class="sub" id="who" style="margin:0"></div>
+    </div>
+    <div class="row" style="margin:0">
+      <a href="index.html" target="_blank" rel="noopener">view site ↗</a>
+      <button id="signout">sign out</button>
+    </div>
+  </div>
 
-    async function initAuth() {
-      const statusEl = document.getElementById('status');
-      const container = document.getElementById('auth-container');
+  <!-- 1. GitHub connection -->
+  <div class="card">
+    <h2>1 · Connect to GitHub</h2>
+    <p class="sub">Changes are saved by committing to your repo (<code>mherub004/iamahsan</code>, branch <code>main</code>), and GitHub Pages republishes the site.</p>
+    <label for="token">Fine-grained access token (Contents: read &amp; write, this repo only)</label>
+    <input type="password" id="token" autocomplete="off" placeholder="github_pat_...">
+    <div class="check"><input type="checkbox" id="remember"><span>Remember on this device (otherwise it is forgotten when you close the tab)</span></div>
+    <div class="row">
+      <button class="primary" id="connect">Connect</button>
+      <button id="forget">Forget token</button>
+      <span class="pill" id="connpill">not connected</span>
+    </div>
+    <div class="msg" id="connmsg"></div>
+  </div>
 
-      try {
-        // Load Clerk script from verified custom domain endpoint
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = "https://clerk.iamahsan.org/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
-          script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY);
-          script.crossOrigin = 'anonymous';
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
+  <!-- 2. Content -->
+  <div class="card">
+    <h2>2 · Main content</h2>
+    <p class="sub">Use <code>**double asterisks**</code> to make text bold.</p>
+    <div id="fields"></div>
+    <div class="row">
+      <button class="primary" id="savecontent" disabled>Save content</button>
+      <button id="reload" disabled>Reload from GitHub</button>
+    </div>
+    <div class="msg" id="contentmsg"></div>
+  </div>
 
-        const clerk = window.Clerk;
-        await clerk.load();
+  <!-- 3. CV -->
+  <div class="card">
+    <h2>3 · CV</h2>
+    <p class="sub">The public “Download CV” button always points to <code>cv/Mherub_Ahsan_CV.pdf</code>. Uploading here replaces that file.</p>
+    <div>Current CV: <span class="pill" id="cvpill">checking…</span> <a id="cvlink" href="cv/Mherub_Ahsan_CV.pdf" target="_blank" rel="noopener" style="color:var(--accent2);font-size:13px" hidden>open</a></div>
+    <label for="cvfile">Choose a new CV (PDF, max 10 MB)</label>
+    <input type="file" id="cvfile" accept="application/pdf,.pdf">
+    <div class="row">
+      <button class="primary" id="savecv" disabled>Upload &amp; replace CV</button>
+    </div>
+    <div class="msg" id="cvmsg"></div>
+    <div class="hint">After saving, GitHub Pages usually needs 1–2 minutes before visitors see the change.</div>
+  </div>
+</div>
 
-        if (clerk.user) {
-          statusEl.style.color = "#22c55e";
-          statusEl.innerText = `Authenticated: ${clerk.user.primaryEmailAddress?.emailAddress}`;
-          clerk.mountUserButton(container);
-        } else {
-          statusEl.innerText = "Please sign in with your admin credentials.";
-          clerk.mountSignIn(container);
-        }
+<script>
+  // ===================== Config =====================
+  const PUBLISHABLE_KEY = "pk_live_Y2xlcmsuaWFtYWhzYW4ub3JnJA";
+  // Only these Clerk accounts get the dashboard UI. (Real write access is the GitHub token.)
+  const ADMIN_EMAILS = ["mherub@iamahsan.org"];
 
-      } catch (error) {
-        console.error("Clerk Initialization Error:", error);
-        statusEl.style.color = "#ef4444";
-        statusEl.innerText = "Error loading security component.";
+  const OWNER = "mherub004", REPO = "iamahsan", BRANCH = "main";
+  const CONTENT_PATH = "content.json";
+  const CV_PATH = "cv/Mherub_Ahsan_CV.pdf";
+  const MAX_CV_BYTES = 10 * 1024 * 1024;
+
+  const FIELDS = [
+    { key: "hero.eyebrow",    label: "Hero · status line",   type: "input" },
+    { key: "hero.subtitle",   label: "Hero · subtitle",      type: "input" },
+    { key: "hero.desc",       label: "Hero · description",   type: "textarea" },
+    { key: "about.p1",        label: "About · paragraph 1",  type: "textarea" },
+    { key: "about.p2",        label: "About · paragraph 2",  type: "textarea" },
+    { key: "about.p3",        label: "About · paragraph 3",  type: "textarea" },
+    { key: "contact.heading", label: "Contact · heading",    type: "input" },
+    { key: "contact.text",    label: "Contact · text",       type: "textarea" }
+  ];
+
+  // ===================== Helpers =====================
+  const $ = id => document.getElementById(id);
+  let token = "";
+  let contentSha = null;
+
+  function say(id, text, cls) { const el = $(id); el.textContent = text; el.className = "msg" + (cls ? " " + cls : ""); }
+
+  function storeGet() { try { return sessionStorage.getItem("gh_tok") || localStorage.getItem("gh_tok") || ""; } catch (e) { return ""; } }
+  function storeSet(v, remember) {
+    try { sessionStorage.setItem("gh_tok", v); if (remember) localStorage.setItem("gh_tok", v); else localStorage.removeItem("gh_tok"); } catch (e) {}
+  }
+  function storeClear() { try { sessionStorage.removeItem("gh_tok"); localStorage.removeItem("gh_tok"); } catch (e) {} }
+
+  function utf8ToB64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin);
+  }
+  function b64ToUtf8(b64) {
+    const bin = atob(b64.replace(/\s/g, ""));
+    return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+  }
+  function fileToB64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(",")[1]);
+      r.onerror = () => reject(new Error("Could not read file"));
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function gh(path, init = {}) {
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}` + (path ? "/" + path : "");
+    return fetch(url, {
+      ...init,
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(init.headers || {})
       }
+    });
+  }
+  async function getSha(path) {
+    const r = await gh(`contents/${path}?ref=${BRANCH}`);
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error(`GitHub said ${r.status} while reading ${path}`);
+    return (await r.json()).sha;
+  }
+  async function putFile(path, b64, message, sha) {
+    const body = { message, content: b64, branch: BRANCH };
+    if (sha) body.sha = sha;
+    const r = await gh(`contents/${path}`, { method: "PUT", body: JSON.stringify(body) });
+    if (!r.ok) {
+      let detail = ""; try { detail = (await r.json()).message; } catch (e) {}
+      throw new Error(`GitHub said ${r.status}${detail ? ": " + detail : ""}`);
     }
+    return r.json();
+  }
 
-    window.addEventListener('load', initAuth);
-  </script>
+  // ===================== Form =====================
+  function buildFields() {
+    const host = $("fields"); host.textContent = "";
+    FIELDS.forEach(f => {
+      const lab = document.createElement("label"); lab.textContent = f.label; lab.htmlFor = "f_" + f.key;
+      const el = document.createElement(f.type === "textarea" ? "textarea" : "input");
+      if (f.type === "input") el.type = "text";
+      el.id = "f_" + f.key;
+      host.append(lab, el);
+    });
+  }
+  function fillFields(data) {
+    FIELDS.forEach(f => { $("f_" + f.key).value = typeof data[f.key] === "string" ? data[f.key] : ""; });
+  }
+
+  async function loadContent() {
+    // Prefer the repo copy (fresh, and gives us the sha); fall back to the live site copy.
+    if (token) {
+      const r = await gh(`contents/${CONTENT_PATH}?ref=${BRANCH}`);
+      if (r.ok) {
+        const j = await r.json();
+        contentSha = j.sha;
+        fillFields(JSON.parse(b64ToUtf8(j.content)));
+        return;
+      }
+      if (r.status === 404) { contentSha = null; }
+    }
+    try {
+      const r = await fetch(CONTENT_PATH + "?t=" + Date.now(), { cache: "no-store" });
+      if (r.ok) fillFields(await r.json());
+    } catch (e) {}
+  }
+
+  async function checkCv() {
+    try {
+      const r = await fetch(CV_PATH + "?t=" + Date.now(), { method: "HEAD", cache: "no-store" });
+      const ok = r.ok;
+      $("cvpill").textContent = ok ? "live on site" : "none uploaded yet";
+      $("cvpill").className = "pill" + (ok ? " ok" : "");
+      $("cvlink").hidden = !ok;
+    } catch (e) { $("cvpill").textContent = "unknown"; }
+  }
+
+  // ===================== GitHub connect =====================
+  function setConnected(on) {
+    $("connpill").textContent = on ? "connected" : "not connected";
+    $("connpill").className = "pill" + (on ? " ok" : "");
+    $("savecontent").disabled = !on;
+    $("reload").disabled = !on;
+    $("savecv").disabled = !on;
+  }
+
+  async function connect(tok, remember) {
+    token = tok.trim();
+    if (!token) { say("connmsg", "Paste a token first.", "err"); return; }
+    say("connmsg", "Checking token…");
+    try {
+      const r = await gh("");
+      if (r.status === 401) throw new Error("Token rejected (401). Check that it is correct and not expired.");
+      if (r.status === 404) throw new Error("Repo not found with this token. It must have access to " + OWNER + "/" + REPO + ".");
+      if (!r.ok) throw new Error("GitHub said " + r.status);
+      const repo = await r.json();
+      if (!repo.permissions || !repo.permissions.push) throw new Error("This token can read the repo but not write. Give it Contents: Read and write.");
+      storeSet(token, remember);
+      setConnected(true);
+      say("connmsg", "Connected to " + repo.full_name + ".", "ok");
+      $("token").value = "";
+      await loadContent();
+    } catch (e) {
+      token = ""; setConnected(false);
+      say("connmsg", e.message, "err");
+    }
+  }
+
+  // ===================== Actions =====================
+  async function saveContent() {
+    $("savecontent").disabled = true;
+    say("contentmsg", "Saving…");
+    try {
+      const data = {};
+      FIELDS.forEach(f => { data[f.key] = $("f_" + f.key).value.trim(); });
+      // always re-read the sha so a stale tab can't overwrite newer changes silently
+      const sha = await getSha(CONTENT_PATH);
+      const res = await putFile(CONTENT_PATH, utf8ToB64(JSON.stringify(data, null, 2) + "\n"), "Admin: update site content", sha);
+      contentSha = res.content.sha;
+      say("contentmsg", "Saved. The site updates in about 1–2 minutes.", "ok");
+    } catch (e) { say("contentmsg", e.message, "err"); }
+    $("savecontent").disabled = false;
+  }
+
+  async function saveCv() {
+    const file = $("cvfile").files[0];
+    if (!file) { say("cvmsg", "Choose a PDF first.", "err"); return; }
+    if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") { say("cvmsg", "That doesn't look like a PDF.", "err"); return; }
+    if (file.size > MAX_CV_BYTES) { say("cvmsg", "File is larger than 10 MB.", "err"); return; }
+    $("savecv").disabled = true;
+    say("cvmsg", "Uploading…");
+    try {
+      const b64 = await fileToB64(file);
+      const sha = await getSha(CV_PATH);
+      await putFile(CV_PATH, b64, "Admin: replace CV", sha);
+      say("cvmsg", "CV uploaded. Visitors get the new file in about 1–2 minutes.", "ok");
+      $("cvfile").value = "";
+    } catch (e) { say("cvmsg", e.message, "err"); }
+    $("savecv").disabled = false;
+  }
+
+  // ===================== Auth (Clerk) =====================
+  let clerk, dashboardReady = false;
+
+  function showDashboard(email) {
+    $("gate").hidden = true;
+    $("dash").hidden = false;
+    $("who").textContent = email;
+    if (dashboardReady) return;
+    dashboardReady = true;
+    buildFields();
+    checkCv();
+    loadContent();
+    const saved = storeGet();
+    if (saved) { $("remember").checked = !!(function(){ try { return localStorage.getItem("gh_tok"); } catch (e) { return ""; } })(); connect(saved, $("remember").checked); }
+  }
+
+  function render() {
+    const statusEl = $("status"), container = $("auth-container");
+    container.textContent = "";
+    $("gate").hidden = false; $("dash").hidden = true;
+
+    if (!clerk.user) {
+      statusEl.style.color = ""; statusEl.textContent = "Please sign in with your admin credentials.";
+      clerk.mountSignIn(container);
+      return;
+    }
+    const email = (clerk.user.primaryEmailAddress?.emailAddress || "").toLowerCase();
+    if (ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email)) {
+      showDashboard(email);
+    } else {
+      statusEl.style.color = "#f87171";
+      statusEl.textContent = "Signed in as " + email + " — this account is not an admin.";
+      clerk.mountUserButton(container);
+    }
+  }
+
+  async function initAuth() {
+    const statusEl = $("status");
+    try {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://clerk.iamahsan.org/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
+        script.setAttribute("data-clerk-publishable-key", PUBLISHABLE_KEY);
+        script.crossOrigin = "anonymous";
+        script.onload = resolve; script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      clerk = window.Clerk;
+      await clerk.load();
+      clerk.addListener(() => render());
+      render();
+    } catch (error) {
+      console.error("Clerk Initialization Error:", error);
+      statusEl.style.color = "#f87171";
+      statusEl.textContent = "Error loading security component.";
+    }
+  }
+
+  $("connect").addEventListener("click", () => connect($("token").value, $("remember").checked));
+  $("forget").addEventListener("click", () => { storeClear(); token = ""; setConnected(false); say("connmsg", "Token removed from this browser.", "ok"); });
+  $("savecontent").addEventListener("click", saveContent);
+  $("reload").addEventListener("click", async () => { say("contentmsg", "Reloading…"); await loadContent(); say("contentmsg", "Loaded latest from GitHub.", "ok"); });
+  $("savecv").addEventListener("click", saveCv);
+  $("signout").addEventListener("click", async () => { try { await clerk.signOut(); } finally { location.reload(); } });
+
+  window.addEventListener("load", initAuth);
+</script>
 </body>
 </html>
