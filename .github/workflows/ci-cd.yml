@@ -10,16 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy Worker + set secrets
+      - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          secrets: |
-            ADMIN_PASSWORD
-            JWT_SECRET
-            GH_TOKEN
-        env:
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
