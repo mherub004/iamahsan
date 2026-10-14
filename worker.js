@@ -169,6 +169,13 @@ export default {
 
     if (method === "OPTIONS") return new Response(null, { status: 204 });
 
+    if (pathname === "/admin/ping" && method === "GET") return json({
+      worker: true,
+      hasPassword: !!env.ADMIN_PASSWORD,
+      hasJwt: !!env.JWT_SECRET,
+      hasGithub: !!env.GITHUB_TOKEN
+    });
+
     if (pathname === "/admin/auth"         && method === "POST")   return handleAuth(request, env);
     if (pathname === "/admin/save-content" && method === "POST")   return handleSaveContent(request, env);
     if (pathname === "/admin/upload-cv"    && method === "POST")   return handleUploadCv(request, env);
