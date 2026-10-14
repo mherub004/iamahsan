@@ -111,9 +111,13 @@ async function bufferToB64(buffer) {
   return btoa(bin);
 }
 
-export async function onRequest({ request, env }) {
+export async function onRequest(context) {
+  const { request, env, next } = context;
   const { pathname } = new URL(request.url);
   const method = request.method;
+
+  // Only intercept /admin/* API routes — everything else passes through to static assets
+  if (!pathname.startsWith("/admin/")) return next();
 
   if (method === "OPTIONS") return new Response(null, { status: 204 });
 
@@ -165,5 +169,5 @@ export async function onRequest({ request, env }) {
     return json({ exists: sha !== null });
   }
 
-  return json({ error: "Not found" }, 404);
+  return next();
 }
