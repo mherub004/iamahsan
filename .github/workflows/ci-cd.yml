@@ -1,17 +1,17 @@
-name: Deploy to Cloudflare Workers
+name: CI
 
 on:
   push:
     branches: [main, master]
 
 jobs:
-  deploy:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Deploy Worker
-        uses: cloudflare/wrangler-action@v3
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          node-version: '22'
+      - run: npm install -g htmlhint
+      - run: htmlhint "**/*.html"
+        continue-on-error: true
