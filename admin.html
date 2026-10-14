@@ -55,8 +55,9 @@
     button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
     button.primary { background: linear-gradient(135deg, #4fd1c5, #63b3ed); color: #0f1720; border: none; font-weight: 700; }
     button.primary:hover:not(:disabled) { filter: brightness(1.12); color: #0f1720; }
+    button.danger { border-color: rgba(248,113,113,0.4); color: var(--red); }
+    button.danger:hover:not(:disabled) { background: rgba(248,113,113,0.12); border-color: var(--red); }
     button:disabled { opacity: .45; cursor: not-allowed; }
-    .check { display: flex; align-items: center; gap: 8px; color: var(--text2); font-size: 13px; margin-top: .75rem; }
     .msg { font-family: var(--mono); font-size: 12.5px; margin-top: .9rem; min-height: 1.2em; color: var(--text2); white-space: pre-wrap; }
     .msg.ok { color: var(--green); } .msg.err { color: var(--red); }
     .pill { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text3); }
@@ -64,26 +65,43 @@
     .hint { color: var(--text3); font-size: 12.5px; margin-top: .6rem; }
     code { font-family: var(--mono); background: var(--bg3); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--accent2); }
     [hidden] { display: none !important; }
-    #status { color: var(--text2); margin-bottom: 1.25rem; font-size: .95rem; }
+    .gate-logo { font-family: var(--mono); font-size: 1.4rem; color: var(--text); margin-bottom: .25rem; }
+    .gate-sub { color: var(--text3); font-size: 13px; margin-bottom: 1.75rem; }
+    .pass-wrap { position: relative; }
+    .pass-wrap input { padding-right: 48px; }
+    .pass-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px;
+      font-size: 16px; line-height: 1;
+    }
+    .pass-toggle:hover { color: var(--accent2); }
+    .login-err { color: var(--red); font-family: var(--mono); font-size: 12.5px; margin-top: .75rem; min-height: 1.2em; }
   </style>
 </head>
 <body>
 
-<!-- Sign-in gate -->
+<!-- Password gate -->
 <div class="gate" id="gate">
   <div class="card">
-    <h2 style="font-size:1.25rem;color:var(--text)">🔒 Admin Portal</h2>
-    <div id="status">Connecting to authentication server...</div>
-    <div id="auth-container"></div>
+    <div class="gate-logo">🔒 Admin Portal</div>
+    <div class="gate-sub">Enter your admin password to continue</div>
+    <div class="pass-wrap">
+      <input type="password" id="passInput" placeholder="Password" autocomplete="current-password">
+      <button class="pass-toggle" id="togglePass" type="button" title="Show/hide">👁</button>
+    </div>
+    <div class="row" style="justify-content:center; margin-top:1rem">
+      <button class="primary" id="loginBtn">Sign in</button>
+    </div>
+    <div class="login-err" id="loginErr"></div>
   </div>
 </div>
 
-<!-- Dashboard (shown only after sign-in with an allowed account) -->
+<!-- Dashboard (shown only after correct password) -->
 <div class="wrap" id="dash" hidden>
   <div class="topbar">
     <div>
       <h1>~/admin</h1>
-      <div class="sub" id="who" style="margin:0"></div>
+      <div class="sub" style="margin:0; color:var(--green)">● authenticated</div>
     </div>
     <div class="row" style="margin:0">
       <a href="index.html" target="_blank" rel="noopener">view site ↗</a>
@@ -97,7 +115,10 @@
     <p class="sub">Changes are saved by committing to your repo (<code>mherub004/iamahsan</code>, branch <code>main</code>), and GitHub Pages republishes the site.</p>
     <label for="token">Fine-grained access token (Contents: read &amp; write, this repo only)</label>
     <input type="password" id="token" autocomplete="off" placeholder="github_pat_...">
-    <div class="check"><input type="checkbox" id="remember"><span>Remember on this device (otherwise it is forgotten when you close the tab)</span></div>
+    <div style="display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;margin-top:.75rem">
+      <input type="checkbox" id="remember">
+      <span>Remember on this device (stored in localStorage)</span>
+    </div>
     <div class="row">
       <button class="primary" id="connect">Connect</button>
       <button id="forget">Forget token</button>
@@ -121,12 +142,13 @@
   <!-- 3. CV -->
   <div class="card">
     <h2>3 · CV</h2>
-    <p class="sub">The public “Download CV” button always points to <code>cv/Mherub_Ahsan_CV.pdf</code>. Uploading here replaces that file.</p>
-    <div>Current CV: <span class="pill" id="cvpill">checking…</span> <a id="cvlink" href="cv/Mherub_Ahsan_CV.pdf" target="_blank" rel="noopener" style="color:var(--accent2);font-size:13px" hidden>open</a></div>
+    <p class="sub">The public "Download CV" button always points to <code>cv/Mherub_Ahsan_CV.pdf</code>. Uploading here replaces that file.</p>
+    <div>Current CV: <span class="pill" id="cvpill">checking…</span> <a id="cvlink" href="cv/Mherub_Ahsan_CV.pdf" target="_blank" rel="noopener" style="color:var(--accent2);font-size:13px" hidden>open ↗</a></div>
     <label for="cvfile">Choose a new CV (PDF, max 10 MB)</label>
     <input type="file" id="cvfile" accept="application/pdf,.pdf">
     <div class="row">
       <button class="primary" id="savecv" disabled>Upload &amp; replace CV</button>
+      <button class="danger" id="deletecv" disabled>Delete CV</button>
     </div>
     <div class="msg" id="cvmsg"></div>
     <div class="hint">After saving, GitHub Pages usually needs 1–2 minutes before visitors see the change.</div>
@@ -135,9 +157,10 @@
 
 <script>
   // ===================== Config =====================
-  const PUBLISHABLE_KEY = "pk_live_Y2xlcmsuaWFtYWhzYW4ub3JnJA";
-  // Only these Clerk accounts get the dashboard UI. (Real write access is the GitHub token.)
-  const ADMIN_EMAILS = ["mherub@iamahsan.org"];
+  // SHA-256 of the admin password. To change the password:
+  //   1. Run: echo -n "YourNewPassword" | sha256sum
+  //   2. Paste the resulting hash here.
+  const PASS_HASH = "c0403191a331cec33a6f6aaaecbc111aabb94a232891cce9f8b638cc4d7628a5";
 
   const OWNER = "mherub004", REPO = "iamahsan", BRANCH = "main";
   const CONTENT_PATH = "content.json";
@@ -186,6 +209,11 @@
     });
   }
 
+  async function sha256hex(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
   async function gh(path, init = {}) {
     const url = `https://api.github.com/repos/${OWNER}/${REPO}` + (path ? "/" + path : "");
     return fetch(url, {
@@ -214,6 +242,15 @@
     }
     return r.json();
   }
+  async function deleteFile(path, message, sha) {
+    const body = { message, sha, branch: BRANCH };
+    const r = await gh(`contents/${path}`, { method: "DELETE", body: JSON.stringify(body) });
+    if (!r.ok) {
+      let detail = ""; try { detail = (await r.json()).message; } catch (e) {}
+      throw new Error(`GitHub said ${r.status}${detail ? ": " + detail : ""}`);
+    }
+    return r.json();
+  }
 
   // ===================== Form =====================
   function buildFields() {
@@ -231,7 +268,6 @@
   }
 
   async function loadContent() {
-    // Prefer the repo copy (fresh, and gives us the sha); fall back to the live site copy.
     if (token) {
       const r = await gh(`contents/${CONTENT_PATH}?ref=${BRANCH}`);
       if (r.ok) {
@@ -255,6 +291,7 @@
       $("cvpill").textContent = ok ? "live on site" : "none uploaded yet";
       $("cvpill").className = "pill" + (ok ? " ok" : "");
       $("cvlink").hidden = !ok;
+      $("deletecv").disabled = !ok || !token;
     } catch (e) { $("cvpill").textContent = "unknown"; }
   }
 
@@ -265,6 +302,7 @@
     $("savecontent").disabled = !on;
     $("reload").disabled = !on;
     $("savecv").disabled = !on;
+    $("deletecv").disabled = !on;
   }
 
   async function connect(tok, remember) {
@@ -283,6 +321,7 @@
       say("connmsg", "Connected to " + repo.full_name + ".", "ok");
       $("token").value = "";
       await loadContent();
+      await checkCv();
     } catch (e) {
       token = ""; setConnected(false);
       say("connmsg", e.message, "err");
@@ -296,7 +335,6 @@
     try {
       const data = {};
       FIELDS.forEach(f => { data[f.key] = $("f_" + f.key).value.trim(); });
-      // always re-read the sha so a stale tab can't overwrite newer changes silently
       const sha = await getSha(CONTENT_PATH);
       const res = await putFile(CONTENT_PATH, utf8ToB64(JSON.stringify(data, null, 2) + "\n"), "Admin: update site content", sha);
       contentSha = res.content.sha;
@@ -318,76 +356,72 @@
       await putFile(CV_PATH, b64, "Admin: replace CV", sha);
       say("cvmsg", "CV uploaded. Visitors get the new file in about 1–2 minutes.", "ok");
       $("cvfile").value = "";
+      await checkCv();
     } catch (e) { say("cvmsg", e.message, "err"); }
     $("savecv").disabled = false;
   }
 
-  // ===================== Auth (Clerk) =====================
-  let clerk, dashboardReady = false;
+  async function deleteCv() {
+    if (!confirm("Delete the CV from the site? The Download CV button will show a notice until you upload a new one.")) return;
+    $("deletecv").disabled = true;
+    say("cvmsg", "Deleting…");
+    try {
+      const sha = await getSha(CV_PATH);
+      if (!sha) { say("cvmsg", "CV is already gone.", "ok"); await checkCv(); return; }
+      await deleteFile(CV_PATH, "Admin: delete CV", sha);
+      say("cvmsg", "CV deleted. Change is live in about 1–2 minutes.", "ok");
+      await checkCv();
+    } catch (e) { say("cvmsg", e.message, "err"); $("deletecv").disabled = false; }
+  }
 
-  function showDashboard(email) {
+  // ===================== Password auth =====================
+  async function tryLogin() {
+    const pass = $("passInput").value;
+    if (!pass) { $("loginErr").textContent = "Enter your password."; return; }
+    const hash = await sha256hex(pass);
+    if (hash !== PASS_HASH) {
+      $("loginErr").textContent = "Incorrect password.";
+      $("passInput").value = "";
+      $("passInput").focus();
+      return;
+    }
+    sessionStorage.setItem("admin_auth", "1");
+    showDashboard();
+  }
+
+  function showDashboard() {
     $("gate").hidden = true;
     $("dash").hidden = false;
-    $("who").textContent = email;
-    if (dashboardReady) return;
-    dashboardReady = true;
     buildFields();
     checkCv();
     loadContent();
     const saved = storeGet();
-    if (saved) { $("remember").checked = !!(function(){ try { return localStorage.getItem("gh_tok"); } catch (e) { return ""; } })(); connect(saved, $("remember").checked); }
-  }
-
-  function render() {
-    const statusEl = $("status"), container = $("auth-container");
-    container.textContent = "";
-    $("gate").hidden = false; $("dash").hidden = true;
-
-    if (!clerk.user) {
-      statusEl.style.color = ""; statusEl.textContent = "Please sign in with your admin credentials.";
-      clerk.mountSignIn(container);
-      return;
-    }
-    const email = (clerk.user.primaryEmailAddress?.emailAddress || "").toLowerCase();
-    if (ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email)) {
-      showDashboard(email);
-    } else {
-      statusEl.style.color = "#f87171";
-      statusEl.textContent = "Signed in as " + email + " — this account is not an admin.";
-      clerk.mountUserButton(container);
+    if (saved) {
+      const remember = !!(function(){ try { return localStorage.getItem("gh_tok"); } catch (e) { return ""; } })();
+      $("remember").checked = remember;
+      connect(saved, remember);
     }
   }
 
-  async function initAuth() {
-    const statusEl = $("status");
-    try {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://clerk.iamahsan.org/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
-        script.setAttribute("data-clerk-publishable-key", PUBLISHABLE_KEY);
-        script.crossOrigin = "anonymous";
-        script.onload = resolve; script.onerror = reject;
-        document.head.appendChild(script);
-      });
-      clerk = window.Clerk;
-      await clerk.load();
-      clerk.addListener(() => render());
-      render();
-    } catch (error) {
-      console.error("Clerk Initialization Error:", error);
-      statusEl.style.color = "#f87171";
-      statusEl.textContent = "Error loading security component.";
-    }
-  }
-
+  // ===================== Event wiring =====================
+  $("loginBtn").addEventListener("click", tryLogin);
+  $("passInput").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+  $("togglePass").addEventListener("click", () => {
+    const inp = $("passInput");
+    inp.type = inp.type === "password" ? "text" : "password";
+  });
   $("connect").addEventListener("click", () => connect($("token").value, $("remember").checked));
   $("forget").addEventListener("click", () => { storeClear(); token = ""; setConnected(false); say("connmsg", "Token removed from this browser.", "ok"); });
   $("savecontent").addEventListener("click", saveContent);
   $("reload").addEventListener("click", async () => { say("contentmsg", "Reloading…"); await loadContent(); say("contentmsg", "Loaded latest from GitHub.", "ok"); });
   $("savecv").addEventListener("click", saveCv);
-  $("signout").addEventListener("click", async () => { try { await clerk.signOut(); } finally { location.reload(); } });
+  $("deletecv").addEventListener("click", deleteCv);
+  $("signout").addEventListener("click", () => { sessionStorage.removeItem("admin_auth"); location.reload(); });
 
-  window.addEventListener("load", initAuth);
+  // Auto-restore session if already authenticated in this tab session
+  if (sessionStorage.getItem("admin_auth") === "1") {
+    showDashboard();
+  }
 </script>
 </body>
 </html>
