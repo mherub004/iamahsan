@@ -1,4 +1,4 @@
-// Secrets — set in Cloudflare Pages dashboard → Settings → Environment variables
+// Secrets — set in Cloudflare dashboard → Settings → Variables and secrets
 //   ADMIN_PASSWORD  – your admin login password
 //   JWT_SECRET      – random string used to sign session tokens
 //   GITHUB_TOKEN    – fine-grained PAT with Contents: read & write on mherub004/iamahsan
@@ -48,14 +48,13 @@ async function requireAuth(request, env) {
 }
 
 async function ghGet(path, env) {
-  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/${path}`, {
+  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/${path}`, {
     headers: {
       "Authorization": "Bearer " + env.GITHUB_TOKEN,
       "Accept": "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28"
     }
   });
-  return r;
 }
 
 async function getSha(filePath, env) {
@@ -163,17 +162,19 @@ async function handleCvStatus(request, env) {
   return json({ exists: sha !== null });
 }
 
-export async function onRequest({ request, env }) {
-  const { pathname } = new URL(request.url);
-  const method = request.method;
+export default {
+  async fetch(request, env) {
+    const { pathname } = new URL(request.url);
+    const method = request.method;
 
-  if (method === "OPTIONS") return new Response(null, { status: 204 });
+    if (method === "OPTIONS") return new Response(null, { status: 204 });
 
-  if (pathname === "/admin/auth"         && method === "POST")   return handleAuth(request, env);
-  if (pathname === "/admin/save-content" && method === "POST")   return handleSaveContent(request, env);
-  if (pathname === "/admin/upload-cv"    && method === "POST")   return handleUploadCv(request, env);
-  if (pathname === "/admin/delete-cv"    && method === "DELETE") return handleDeleteCv(request, env);
-  if (pathname === "/admin/cv-status"    && method === "GET")    return handleCvStatus(request, env);
+    if (pathname === "/admin/auth"         && method === "POST")   return handleAuth(request, env);
+    if (pathname === "/admin/save-content" && method === "POST")   return handleSaveContent(request, env);
+    if (pathname === "/admin/upload-cv"    && method === "POST")   return handleUploadCv(request, env);
+    if (pathname === "/admin/delete-cv"    && method === "DELETE") return handleDeleteCv(request, env);
+    if (pathname === "/admin/cv-status"    && method === "GET")    return handleCvStatus(request, env);
 
-  return new Response("Not found", { status: 404 });
-}
+    return env.ASSETS.fetch(request);
+  }
+};
