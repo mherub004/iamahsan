@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,20 +27,48 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-      - name: Get workers.dev URL
+      - name: Patch admin.html with correct worker URL
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          python3 -c "
-          import json, os, urllib.request
-          token = os.environ['CLOUDFLARE_API_TOKEN']
-          account = '4f1b4e86acbe9b77219449ce6f88f008'
+          python3 - <<'EOF'
+          import json, os, urllib.request, re
+
+          token   = os.environ["CLOUDFLARE_API_TOKEN"]
+          account = "4f1b4e86acbe9b77219449ce6f88f008"
+
           req = urllib.request.Request(
-            f'https://api.cloudflare.com/client/v4/accounts/{account}/workers/subdomain',
-            headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'}
+            f"https://api.cloudflare.com/client/v4/accounts/{account}/workers/subdomain",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/json"}
           )
           with urllib.request.urlopen(req) as r:
-            data = json.load(r)
-            subdomain = data['result']['subdomain']
-            print(f'WORKER_URL=https://iamahsan-worker.{subdomain}.workers.dev')
-          "
+            subdomain = json.load(r)["result"]["subdomain"]
+
+          url = f"https://iamahsan-worker.{subdomain}.workers.dev"
+          print(f"Worker URL: {url}")
+
+          with open("admin.html") as f:
+            html = f.read()
+
+          patched = re.sub(
+            r'const WORKER_BASE = "[^"]*"',
+            f'const WORKER_BASE = "{url}"',
+            html
+          )
+
+          if patched != html:
+            with open("admin.html", "w") as f:
+              f.write(patched)
+            print("admin.html patched")
+          else:
+            print("admin.html already correct")
+          EOF
+
+      - name: Commit updated admin.html if changed
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git diff --quiet admin.html || \
+            (git add admin.html && \
+             git commit -m "[skip ci] Set correct WORKER_BASE URL in admin.html" && \
+             git push)
