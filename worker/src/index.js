@@ -53,10 +53,14 @@ async function requireAuth(request, env) {
 
 // ── GitHub API helpers ───────────────────────────────────────────────────────
 
+function ghToken(env) {
+  return (env.GH_TOKEN || "").trim();
+}
+
 async function ghGet(path, env) {
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/${path}`, {
     headers: {
-      "Authorization": "Bearer " + env.GH_TOKEN,
+      "Authorization": "Bearer " + ghToken(env),
       "Accept": "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28"
     }
@@ -67,7 +71,10 @@ async function ghGet(path, env) {
 async function getSha(filePath, env) {
   const r = await ghGet(`contents/${filePath}?ref=${BRANCH}`, env);
   if (r.status === 404) return null;
-  if (!r.ok) throw new Error(`GitHub ${r.status} reading ${filePath}`);
+  if (!r.ok) {
+    let msg = ""; try { msg = (await r.json()).message; } catch {}
+    throw new Error(`GitHub ${r.status} reading ${filePath}${msg ? ": " + msg : ""}`);
+  }
   return (await r.json()).sha;
 }
 
@@ -78,7 +85,7 @@ async function putFile(filePath, b64Content, message, env) {
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${filePath}`, {
     method: "PUT",
     headers: {
-      "Authorization": "Bearer " + env.GH_TOKEN,
+      "Authorization": "Bearer " + ghToken(env),
       "Accept": "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json"
@@ -98,7 +105,7 @@ async function deleteFile(filePath, message, env) {
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${filePath}`, {
     method: "DELETE",
     headers: {
-      "Authorization": "Bearer " + env.GH_TOKEN,
+      "Authorization": "Bearer " + ghToken(env),
       "Accept": "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json"
