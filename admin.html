@@ -109,27 +109,9 @@
     </div>
   </div>
 
-  <!-- 1. GitHub connection -->
+  <!-- 1. Content -->
   <div class="card">
-    <h2>1 · Connect to GitHub</h2>
-    <p class="sub">Changes are saved by committing to your repo (<code>mherub004/iamahsan</code>, branch <code>main</code>), and GitHub Pages republishes the site.</p>
-    <label for="token">Fine-grained access token (Contents: read &amp; write, this repo only)</label>
-    <input type="password" id="token" autocomplete="off" placeholder="github_pat_...">
-    <div style="display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;margin-top:.75rem">
-      <input type="checkbox" id="remember">
-      <span>Remember on this device (stored in localStorage)</span>
-    </div>
-    <div class="row">
-      <button class="primary" id="connect">Connect</button>
-      <button id="forget">Forget token</button>
-      <span class="pill" id="connpill">not connected</span>
-    </div>
-    <div class="msg" id="connmsg"></div>
-  </div>
-
-  <!-- 2. Content -->
-  <div class="card">
-    <h2>2 · Main content</h2>
+    <h2>1 · Main content</h2>
     <p class="sub">Use <code>**double asterisks**</code> to make text bold.</p>
     <div id="fields"></div>
     <div class="row">
@@ -139,9 +121,9 @@
     <div class="msg" id="contentmsg"></div>
   </div>
 
-  <!-- 3. CV -->
+  <!-- 2. CV -->
   <div class="card">
-    <h2>3 · CV</h2>
+    <h2>2 · CV</h2>
     <p class="sub">The public "Download CV" button always points to <code>cv/Mherub_Ahsan_CV.pdf</code>. Uploading here replaces that file.</p>
     <div>Current CV: <span class="pill" id="cvpill">checking…</span> <a id="cvlink" href="cv/Mherub_Ahsan_CV.pdf" target="_blank" rel="noopener" style="color:var(--accent2);font-size:13px" hidden>open ↗</a></div>
     <label for="cvfile">Choose a new CV (PDF, max 10 MB)</label>
@@ -151,19 +133,13 @@
       <button class="danger" id="deletecv" disabled>Delete CV</button>
     </div>
     <div class="msg" id="cvmsg"></div>
-    <div class="hint">After saving, GitHub Pages usually needs 1–2 minutes before visitors see the change.</div>
+    <div class="hint">After saving, Cloudflare Pages usually needs 1–2 minutes before visitors see the change.</div>
   </div>
 </div>
 
 <script>
   // ===================== Config =====================
-  // SHA-256 of the admin password. To change the password:
-  //   1. Run: echo -n "YourNewPassword" | sha256sum
-  //   2. Paste the resulting hash here.
-  const PASS_HASH = "c0403191a331cec33a6f6aaaecbc111aabb94a232891cce9f8b638cc4d7628a5";
-
-  const OWNER = "mherub004", REPO = "iamahsan", BRANCH = "main";
-  const CONTENT_PATH = "content.json";
+  const WORKER_BASE = "";  // same origin — Worker handles /admin/* routes
   const CV_PATH = "cv/Mherub_Ahsan_CV.pdf";
   const MAX_CV_BYTES = 10 * 1024 * 1024;
 
@@ -180,26 +156,10 @@
 
   // ===================== Helpers =====================
   const $ = id => document.getElementById(id);
-  let token = "";
-  let contentSha = null;
+  let jwtToken = "";
 
   function say(id, text, cls) { const el = $(id); el.textContent = text; el.className = "msg" + (cls ? " " + cls : ""); }
 
-  function storeGet() { try { return sessionStorage.getItem("gh_tok") || localStorage.getItem("gh_tok") || ""; } catch (e) { return ""; } }
-  function storeSet(v, remember) {
-    try { sessionStorage.setItem("gh_tok", v); if (remember) localStorage.setItem("gh_tok", v); else localStorage.removeItem("gh_tok"); } catch (e) {}
-  }
-  function storeClear() { try { sessionStorage.removeItem("gh_tok"); localStorage.removeItem("gh_tok"); } catch (e) {} }
-
-  function utf8ToB64(str) {
-    const bytes = new TextEncoder().encode(str);
-    let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
-    return btoa(bin);
-  }
-  function b64ToUtf8(b64) {
-    const bin = atob(b64.replace(/\s/g, ""));
-    return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
-  }
   function fileToB64(file) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
@@ -209,47 +169,15 @@
     });
   }
 
-  async function sha256hex(str) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-  }
-
-  async function gh(path, init = {}) {
-    const url = `https://api.github.com/repos/${OWNER}/${REPO}` + (path ? "/" + path : "");
-    return fetch(url, {
+  async function api(path, init = {}) {
+    const r = await fetch(WORKER_BASE + path, {
       ...init,
       headers: {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
+        ...(jwtToken ? { "Authorization": "Bearer " + jwtToken } : {}),
         ...(init.headers || {})
       }
     });
-  }
-  async function getSha(path) {
-    const r = await gh(`contents/${path}?ref=${BRANCH}`);
-    if (r.status === 404) return null;
-    if (!r.ok) throw new Error(`GitHub said ${r.status} while reading ${path}`);
-    return (await r.json()).sha;
-  }
-  async function putFile(path, b64, message, sha) {
-    const body = { message, content: b64, branch: BRANCH };
-    if (sha) body.sha = sha;
-    const r = await gh(`contents/${path}`, { method: "PUT", body: JSON.stringify(body) });
-    if (!r.ok) {
-      let detail = ""; try { detail = (await r.json()).message; } catch (e) {}
-      throw new Error(`GitHub said ${r.status}${detail ? ": " + detail : ""}`);
-    }
-    return r.json();
-  }
-  async function deleteFile(path, message, sha) {
-    const body = { message, sha, branch: BRANCH };
-    const r = await gh(`contents/${path}`, { method: "DELETE", body: JSON.stringify(body) });
-    if (!r.ok) {
-      let detail = ""; try { detail = (await r.json()).message; } catch (e) {}
-      throw new Error(`GitHub said ${r.status}${detail ? ": " + detail : ""}`);
-    }
-    return r.json();
+    return r;
   }
 
   // ===================== Form =====================
@@ -268,64 +196,21 @@
   }
 
   async function loadContent() {
-    if (token) {
-      const r = await gh(`contents/${CONTENT_PATH}?ref=${BRANCH}`);
-      if (r.ok) {
-        const j = await r.json();
-        contentSha = j.sha;
-        fillFields(JSON.parse(b64ToUtf8(j.content)));
-        return;
-      }
-      if (r.status === 404) { contentSha = null; }
-    }
     try {
-      const r = await fetch(CONTENT_PATH + "?t=" + Date.now(), { cache: "no-store" });
+      const r = await fetch("content.json?t=" + Date.now(), { cache: "no-store" });
       if (r.ok) fillFields(await r.json());
     } catch (e) {}
   }
 
   async function checkCv() {
     try {
-      const r = await fetch(CV_PATH + "?t=" + Date.now(), { method: "HEAD", cache: "no-store" });
-      const ok = r.ok;
-      $("cvpill").textContent = ok ? "live on site" : "none uploaded yet";
-      $("cvpill").className = "pill" + (ok ? " ok" : "");
-      $("cvlink").hidden = !ok;
-      $("deletecv").disabled = !ok || !token;
+      const r = await api("/admin/cv-status");
+      const j = await r.json();
+      $("cvpill").textContent = j.exists ? "live on site" : "none uploaded yet";
+      $("cvpill").className = "pill" + (j.exists ? " ok" : "");
+      $("cvlink").hidden = !j.exists;
+      $("deletecv").disabled = !j.exists;
     } catch (e) { $("cvpill").textContent = "unknown"; }
-  }
-
-  // ===================== GitHub connect =====================
-  function setConnected(on) {
-    $("connpill").textContent = on ? "connected" : "not connected";
-    $("connpill").className = "pill" + (on ? " ok" : "");
-    $("savecontent").disabled = !on;
-    $("reload").disabled = !on;
-    $("savecv").disabled = !on;
-    $("deletecv").disabled = !on;
-  }
-
-  async function connect(tok, remember) {
-    token = tok.trim();
-    if (!token) { say("connmsg", "Paste a token first.", "err"); return; }
-    say("connmsg", "Checking token…");
-    try {
-      const r = await gh("");
-      if (r.status === 401) throw new Error("Token rejected (401). Check that it is correct and not expired.");
-      if (r.status === 404) throw new Error("Repo not found with this token. It must have access to " + OWNER + "/" + REPO + ".");
-      if (!r.ok) throw new Error("GitHub said " + r.status);
-      const repo = await r.json();
-      if (!repo.permissions || !repo.permissions.push) throw new Error("This token can read the repo but not write. Give it Contents: Read and write.");
-      storeSet(token, remember);
-      setConnected(true);
-      say("connmsg", "Connected to " + repo.full_name + ".", "ok");
-      $("token").value = "";
-      await loadContent();
-      await checkCv();
-    } catch (e) {
-      token = ""; setConnected(false);
-      say("connmsg", e.message, "err");
-    }
   }
 
   // ===================== Actions =====================
@@ -335,9 +220,12 @@
     try {
       const data = {};
       FIELDS.forEach(f => { data[f.key] = $("f_" + f.key).value.trim(); });
-      const sha = await getSha(CONTENT_PATH);
-      const res = await putFile(CONTENT_PATH, utf8ToB64(JSON.stringify(data, null, 2) + "\n"), "Admin: update site content", sha);
-      contentSha = res.content.sha;
+      const r = await api("/admin/save-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) { const j = await r.json(); throw new Error(j.error || "Save failed"); }
       say("contentmsg", "Saved. The site updates in about 1–2 minutes.", "ok");
     } catch (e) { say("contentmsg", e.message, "err"); }
     $("savecontent").disabled = false;
@@ -351,9 +239,10 @@
     $("savecv").disabled = true;
     say("cvmsg", "Uploading…");
     try {
-      const b64 = await fileToB64(file);
-      const sha = await getSha(CV_PATH);
-      await putFile(CV_PATH, b64, "Admin: replace CV", sha);
+      const form = new FormData();
+      form.append("file", file);
+      const r = await api("/admin/upload-cv", { method: "POST", body: form });
+      if (!r.ok) { const j = await r.json(); throw new Error(j.error || "Upload failed"); }
       say("cvmsg", "CV uploaded. Visitors get the new file in about 1–2 minutes.", "ok");
       $("cvfile").value = "";
       await checkCv();
@@ -362,13 +251,12 @@
   }
 
   async function deleteCv() {
-    if (!confirm("Delete the CV from the site? The Download CV button will show a notice until you upload a new one.")) return;
+    if (!confirm("Delete the CV from the site?")) return;
     $("deletecv").disabled = true;
     say("cvmsg", "Deleting…");
     try {
-      const sha = await getSha(CV_PATH);
-      if (!sha) { say("cvmsg", "CV is already gone.", "ok"); await checkCv(); return; }
-      await deleteFile(CV_PATH, "Admin: delete CV", sha);
+      const r = await api("/admin/delete-cv", { method: "DELETE" });
+      if (!r.ok) { const j = await r.json(); throw new Error(j.error || "Delete failed"); }
       say("cvmsg", "CV deleted. Change is live in about 1–2 minutes.", "ok");
       await checkCv();
     } catch (e) { say("cvmsg", e.message, "err"); $("deletecv").disabled = false; }
@@ -378,29 +266,33 @@
   async function tryLogin() {
     const pass = $("passInput").value;
     if (!pass) { $("loginErr").textContent = "Enter your password."; return; }
-    const hash = await sha256hex(pass);
-    if (hash !== PASS_HASH) {
-      $("loginErr").textContent = "Incorrect password.";
+    $("loginBtn").disabled = true;
+    $("loginErr").textContent = "";
+    try {
+      const r = await fetch(WORKER_BASE + "/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pass })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Login failed");
+      jwtToken = j.token;
+      sessionStorage.setItem("admin_jwt", jwtToken);
+      showDashboard();
+    } catch (e) {
+      $("loginErr").textContent = e.message;
       $("passInput").value = "";
       $("passInput").focus();
-      return;
     }
-    sessionStorage.setItem("admin_auth", "1");
-    showDashboard();
+    $("loginBtn").disabled = false;
   }
 
   function showDashboard() {
     $("gate").hidden = true;
     $("dash").hidden = false;
     buildFields();
-    checkCv();
     loadContent();
-    const saved = storeGet();
-    if (saved) {
-      const remember = !!(function(){ try { return localStorage.getItem("gh_tok"); } catch (e) { return ""; } })();
-      $("remember").checked = remember;
-      connect(saved, remember);
-    }
+    checkCv();
   }
 
   // ===================== Event wiring =====================
@@ -410,18 +302,15 @@
     const inp = $("passInput");
     inp.type = inp.type === "password" ? "text" : "password";
   });
-  $("connect").addEventListener("click", () => connect($("token").value, $("remember").checked));
-  $("forget").addEventListener("click", () => { storeClear(); token = ""; setConnected(false); say("connmsg", "Token removed from this browser.", "ok"); });
   $("savecontent").addEventListener("click", saveContent);
-  $("reload").addEventListener("click", async () => { say("contentmsg", "Reloading…"); await loadContent(); say("contentmsg", "Loaded latest from GitHub.", "ok"); });
+  $("reload").addEventListener("click", async () => { say("contentmsg", "Reloading…"); await loadContent(); say("contentmsg", "Loaded.", "ok"); });
   $("savecv").addEventListener("click", saveCv);
   $("deletecv").addEventListener("click", deleteCv);
-  $("signout").addEventListener("click", () => { sessionStorage.removeItem("admin_auth"); location.reload(); });
+  $("signout").addEventListener("click", () => { sessionStorage.removeItem("admin_jwt"); jwtToken = ""; location.reload(); });
 
-  // Auto-restore session if already authenticated in this tab session
-  if (sessionStorage.getItem("admin_auth") === "1") {
-    showDashboard();
-  }
+  // Auto-restore session
+  const saved = sessionStorage.getItem("admin_jwt");
+  if (saved) { jwtToken = saved; showDashboard(); }
 </script>
 </body>
 </html>

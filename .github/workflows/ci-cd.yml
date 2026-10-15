@@ -1,17 +1,26 @@
-name: CI
+name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
-  check:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Deploy Worker + set secrets
+        uses: cloudflare/wrangler-action@v3
         with:
-          node-version: '22'
-      - run: npm install -g htmlhint
-      - run: htmlhint "**/*.html"
-        continue-on-error: true
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          secrets: |
+            ADMIN_PASSWORD
+            JWT_SECRET
+            GH_TOKEN
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
