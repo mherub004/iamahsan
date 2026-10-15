@@ -57,13 +57,16 @@ function ghToken(env) {
   return (env.GH_TOKEN || "").trim();
 }
 
+const GH_HEADERS = (env) => ({
+  "Authorization": "Bearer " + ghToken(env),
+  "Accept": "application/vnd.github+json",
+  "X-GitHub-Api-Version": "2022-11-28",
+  "User-Agent": "iamahsan-worker/1.0"
+});
+
 async function ghGet(path, env) {
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/${path}`, {
-    headers: {
-      "Authorization": "Bearer " + ghToken(env),
-      "Accept": "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28"
-    },
+    headers: GH_HEADERS(env),
     cf: { cacheEverything: false }
   });
   return r;
@@ -85,12 +88,7 @@ async function putFile(filePath, b64Content, message, env) {
   if (sha) body.sha = sha;
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${filePath}`, {
     method: "PUT",
-    headers: {
-      "Authorization": "Bearer " + ghToken(env),
-      "Accept": "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "Content-Type": "application/json"
-    },
+    headers: { ...GH_HEADERS(env), "Content-Type": "application/json" },
     body: JSON.stringify(body)
   });
   if (!r.ok) {
@@ -105,12 +103,7 @@ async function deleteFile(filePath, message, env) {
   if (!sha) return; // already gone
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${filePath}`, {
     method: "DELETE",
-    headers: {
-      "Authorization": "Bearer " + ghToken(env),
-      "Accept": "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "Content-Type": "application/json"
-    },
+    headers: { ...GH_HEADERS(env), "Content-Type": "application/json" },
     body: JSON.stringify({ message, sha, branch: BRANCH })
   });
   if (!r.ok) {
@@ -182,11 +175,7 @@ async function handleCvStatus(request, env) {
 async function handleDebug(request, env) {
   const tok = ghToken(env);
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/cv/Mherub_Ahsan_CV.pdf?ref=${BRANCH}`, {
-    headers: {
-      "Authorization": "Bearer " + tok,
-      "Accept": "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28"
-    },
+    headers: GH_HEADERS(env),
     cf: { cacheEverything: false }
   });
   const body = await r.text();
