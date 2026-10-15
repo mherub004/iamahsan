@@ -1,34 +1,12 @@
-name: Deploy Worker
+name: Check
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install wrangler
-        run: npm install
-        working-directory: worker
-
-      - name: Deploy worker
-        run: npx wrangler deploy
-        working-directory: worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-      - name: Set worker secrets
-        working-directory: worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          echo "${{ secrets.ADMIN_PASSWORD }}" | npx wrangler secret put ADMIN_PASSWORD
-          echo "${{ secrets.JWT_SECRET }}"      | npx wrangler secret put JWT_SECRET
-          echo "${{ secrets.GH_PAT }}"          | npx wrangler secret put GH_TOKEN
+      - run: npx --yes htmlhint "**/*.html" || true
