@@ -63,7 +63,8 @@ async function ghGet(path, env) {
       "Authorization": "Bearer " + ghToken(env),
       "Accept": "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28"
-    }
+    },
+    cf: { cacheEverything: false }
   });
   return r;
 }
@@ -178,6 +179,25 @@ async function handleCvStatus(request, env) {
   return json({ exists: sha !== null });
 }
 
+async function handleDebug(request, env) {
+  const tok = ghToken(env);
+  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/cv/Mherub_Ahsan_CV.pdf?ref=${BRANCH}`, {
+    headers: {
+      "Authorization": "Bearer " + tok,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    },
+    cf: { cacheEverything: false }
+  });
+  let body; try { body = await r.json(); } catch { body = null; }
+  return json({
+    token_length: tok.length,
+    token_prefix: tok.slice(0, 12),
+    github_status: r.status,
+    github_body: body
+  });
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 const CORS = {
@@ -206,6 +226,7 @@ export default {
       else if (pathname === "/admin/upload-cv"    && method === "POST")   response = await handleUploadCv(request, env);
       else if (pathname === "/admin/delete-cv"    && method === "DELETE") response = await handleDeleteCv(request, env);
       else if (pathname === "/admin/cv-status"    && method === "GET")    response = await handleCvStatus(request, env);
+      else if (pathname === "/admin/debug-gh"     && method === "GET")    response = await handleDebug(request, env);
       else response = new Response("Not found", { status: 404 });
 
       return addCors(response);
