@@ -1,0 +1,8 @@
+name = "iamahsan-worker"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+account_id = "4f1b4e86acbe9b77219449ce6f88f008"
+
+routes = [
+  { pattern = "iamahsan.org/admin/*", zone_name = "iamahsan.org" }
+]

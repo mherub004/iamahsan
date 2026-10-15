@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers
+name: Deploy Worker
 
 on:
   push:
@@ -10,17 +10,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy Worker + set secrets
-        uses: cloudflare/wrangler-action@v3
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
-          secrets: |
-            ADMIN_PASSWORD
-            JWT_SECRET
-            GH_TOKEN
+          node-version: '22'
+
+      - name: Install wrangler
+        run: npm install
+        working-directory: worker
+
+      - name: Deploy worker
+        run: npx wrangler deploy
+        working-directory: worker
         env:
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Set worker secrets
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "${{ secrets.ADMIN_PASSWORD }}" | npx wrangler secret put ADMIN_PASSWORD
+          echo "${{ secrets.JWT_SECRET }}"      | npx wrangler secret put JWT_SECRET
+          echo "${{ secrets.GH_PAT }}"          | npx wrangler secret put GH_TOKEN
