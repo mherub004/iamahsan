@@ -10,16 +10,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: worker
-          secrets: |
-            ADMIN_PASSWORD
-            JWT_SECRET
-            GH_TOKEN
+          node-version: '22'
+
+      - name: Install wrangler
+        run: npm install
+        working-directory: worker
+
+      - name: Deploy worker code
+        run: npx wrangler deploy
+        working-directory: worker
         env:
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Set worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SECRET_ADMIN: ${{ secrets.ADMIN_PASSWORD }}
+          SECRET_JWT: ${{ secrets.JWT_SECRET }}
+          SECRET_GH: ${{ secrets.GH_PAT }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request, urllib.error
+
+          token   = os.environ["CLOUDFLARE_API_TOKEN"]
+          account = "4f1b4e86acbe9b77219449ce6f88f008"
+          worker  = "iamahsan-worker"
+          url     = f"https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts/{worker}/secrets"
+          headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+          secrets = {
+            "ADMIN_PASSWORD": os.environ["SECRET_ADMIN"],
+            "JWT_SECRET":     os.environ["SECRET_JWT"],
+            "GH_TOKEN":       os.environ["SECRET_GH"],
+          }
+
+          for name, value in secrets.items():
+            body = json.dumps({"name": name, "text": value, "type": "secret_text"}).encode()
+            req  = urllib.request.Request(url, data=body, method="PUT", headers=headers)
+            try:
+              with urllib.request.urlopen(req) as r:
+                print(f"  {name}: ok")
+            except urllib.error.HTTPError as e:
+              print(f"  {name}: FAILED {e.code} {e.read().decode()}")
+              raise
+          EOF
