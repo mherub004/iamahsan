@@ -173,19 +173,33 @@ async function handleCvStatus(request, env) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 
+const CORS = {
+  "Access-Control-Allow-Origin": "https://iamahsan.org",
+  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+function addCors(response) {
+  const r = new Response(response.body, response);
+  Object.entries(CORS).forEach(([k, v]) => r.headers.set(k, v));
+  return r;
+}
+
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
     const method = request.method;
 
-    if (method === "OPTIONS") return new Response(null, { status: 204 });
+    if (method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
-    if (pathname === "/admin/auth"         && method === "POST")   return handleAuth(request, env);
-    if (pathname === "/admin/save-content" && method === "POST")   return handleSaveContent(request, env);
-    if (pathname === "/admin/upload-cv"    && method === "POST")   return handleUploadCv(request, env);
-    if (pathname === "/admin/delete-cv"    && method === "DELETE") return handleDeleteCv(request, env);
-    if (pathname === "/admin/cv-status"    && method === "GET")    return handleCvStatus(request, env);
+    let response;
+    if (pathname === "/admin/auth"         && method === "POST")   response = await handleAuth(request, env);
+    else if (pathname === "/admin/save-content" && method === "POST")   response = await handleSaveContent(request, env);
+    else if (pathname === "/admin/upload-cv"    && method === "POST")   response = await handleUploadCv(request, env);
+    else if (pathname === "/admin/delete-cv"    && method === "DELETE") response = await handleDeleteCv(request, env);
+    else if (pathname === "/admin/cv-status"    && method === "GET")    response = await handleCvStatus(request, env);
+    else response = new Response("Not found", { status: 404 });
 
-    return new Response("Not found", { status: 404 });
+    return addCors(response);
   }
 };
