@@ -187,19 +187,26 @@ function addCors(response) {
 
 export default {
   async fetch(request, env) {
-    const { pathname } = new URL(request.url);
-    const method = request.method;
+    try {
+      const { pathname } = new URL(request.url);
+      const method = request.method;
 
-    if (method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+      if (method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
-    let response;
-    if (pathname === "/admin/auth"         && method === "POST")   response = await handleAuth(request, env);
-    else if (pathname === "/admin/save-content" && method === "POST")   response = await handleSaveContent(request, env);
-    else if (pathname === "/admin/upload-cv"    && method === "POST")   response = await handleUploadCv(request, env);
-    else if (pathname === "/admin/delete-cv"    && method === "DELETE") response = await handleDeleteCv(request, env);
-    else if (pathname === "/admin/cv-status"    && method === "GET")    response = await handleCvStatus(request, env);
-    else response = new Response("Not found", { status: 404 });
+      let response;
+      if (pathname === "/admin/auth"              && method === "POST")   response = await handleAuth(request, env);
+      else if (pathname === "/admin/save-content" && method === "POST")   response = await handleSaveContent(request, env);
+      else if (pathname === "/admin/upload-cv"    && method === "POST")   response = await handleUploadCv(request, env);
+      else if (pathname === "/admin/delete-cv"    && method === "DELETE") response = await handleDeleteCv(request, env);
+      else if (pathname === "/admin/cv-status"    && method === "GET")    response = await handleCvStatus(request, env);
+      else response = new Response("Not found", { status: 404 });
 
-    return addCors(response);
+      return addCors(response);
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS }
+      });
+    }
   }
 };
