@@ -189,12 +189,13 @@ async function handleDebug(request, env) {
     },
     cf: { cacheEverything: false }
   });
-  let body; try { body = await r.json(); } catch { body = null; }
+  const body = await r.text();
   return json({
     token_length: tok.length,
     token_prefix: tok.slice(0, 12),
     github_status: r.status,
-    github_body: body
+    github_content_type: r.headers.get("content-type"),
+    github_body: body.slice(0, 500)
   });
 }
 
