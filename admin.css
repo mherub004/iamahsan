@@ -1,0 +1,87 @@
+.admin-page {
+  background: var(--bg);
+  background-image: none;
+}
+.admin-page .wrap {
+  max-width: 900px;
+}
+.admin-page .card {
+  background: var(--bg3);
+  border-color: var(--border);
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 #e2e1d4;
+}
+.admin-page .card::before {
+  background: var(--accent);
+  height: 3px;
+}
+.admin-page .gate .card {
+  max-width: 460px;
+  padding: 40px 32px;
+}
+.admin-page .gate-logo {
+  font:
+    normal 36px/1.2 Georgia,
+    serif;
+  letter-spacing: -0.04em;
+  margin-bottom: 14px;
+}
+.admin-page .gate-sub {
+  line-height: 1.8;
+}
+.admin-page h1 {
+  font:
+    normal 38px Georgia,
+    serif;
+  letter-spacing: -0.03em;
+}
+.admin-page h2 {
+  font:
+    normal 28px Georgia,
+    serif;
+  color: var(--accent);
+}
+.admin-page label {
+  color: var(--text2);
+}
+.admin-page button {
+  border-radius: 3px;
+}
+.admin-page button.primary {
+  background: var(--accent);
+  color: #fffcf6;
+  border: 1px solid var(--accent);
+}
+.admin-page button.primary:hover:not(:disabled) {
+  background: #193e31;
+  color: #fffcf6;
+  filter: none;
+}
+.admin-page .msg.err,
+.admin-page .login-err,
+.admin-page button.danger {
+  color: #a03626;
+}
+.admin-page input,
+.admin-page textarea {
+  background: #fffcf6;
+  border-radius: 3px;
+}
+.admin-page .pass-toggle {
+  border: 0;
+}
+.admin-page .pass-wrap input {
+  min-height: 46px;
+}
+.admin-page .pill.ok {
+  border-color: #a9b99d;
+}
+.admin-page input[type="file"] {
+  max-width: 100%;
+}
+.admin-page .msg {
+  overflow-wrap: anywhere;
+}
+.admin-page .topbar .row {
+  flex-wrap: wrap;
+}

@@ -77,22 +77,24 @@
     .pass-toggle:hover { color: var(--accent2); }
     .login-err { color: var(--red); font-family: var(--mono); font-size: 12.5px; margin-top: .75rem; min-height: 1.2em; }
   </style>
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="admin.css">
 </head>
-<body>
+<body class="admin-page">
 
 <!-- Password gate -->
 <div class="gate" id="gate">
   <div class="card">
-    <div class="gate-logo">🔒 Admin Portal</div>
-    <div class="gate-sub">Enter your admin password to continue</div>
+    <div class="gate-logo">The editing room.</div>
+    <div class="gate-sub">Your portfolio, kept up to date. Sign in to edit.</div>
     <div class="pass-wrap">
-      <input type="password" id="passInput" placeholder="Password" autocomplete="current-password">
-      <button class="pass-toggle" id="togglePass" type="button" title="Show/hide">👁</button>
+      <input type="password" id="passInput" aria-label="Admin password" placeholder="Password" autocomplete="current-password">
+      <button class="pass-toggle" id="togglePass" type="button" title="Show/hide password" aria-label="Show or hide password">👁</button>
     </div>
     <div class="row" style="justify-content:center; margin-top:1rem">
       <button class="primary" id="loginBtn">Sign in</button>
     </div>
-    <div class="login-err" id="loginErr"></div>
+    <div class="login-err" id="loginErr" role="alert"></div>
   </div>
 </div>
 
@@ -276,6 +278,7 @@
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "Login failed");
+      $("passInput").value = "";
       jwtToken = j.token;
       sessionStorage.setItem("admin_jwt", jwtToken);
       showDashboard();
